@@ -41,6 +41,18 @@ jobs:
           echo "Current perf_event_paranoid: $(cat /proc/sys/kernel/perf_event_paranoid)"
           sudo sysctl -w kernel.perf_event_paranoid=-1 || echo "Failed to set perf_event_paranoid (expected in some environments)"
           echo "New perf_event_paranoid: $(cat /proc/sys/kernel/perf_event_paranoid)"
+
+          # Test if perf events work on the host (outside Docker)
+          echo "Testing perf events on host..."
+          if command -v perf &> /dev/null; then
+            perf stat -e instructions:u -- echo "test" 2>&1 | head -5 || echo "perf command failed"
+          else
+            echo "perf tool not installed, trying direct syscall test"
+          fi
+
+          # Check if PMU devices exist
+          echo "PMU devices:"
+          ls /sys/bus/event_source/devices/ 2>/dev/null || echo "No PMU devices found"
       - name: Run matrix job
         if: ${{ matrix.config.platform != 'Windows' }}
         run: |
@@ -54,7 +66,9 @@ jobs:
           docker_args=(
             "run"
             "--cap-add=SYS_ADMIN"
+            "--cap-add=SYS_PTRACE"
             "--security-opt" "seccomp=unconfined"
+            "--sysctl" "kernel.perf_event_paranoid=-1"
             "-v" "${{ github.workspace }}:$workspace"
             "-w" "$workspace"
             "-e" "CI=$CI"
