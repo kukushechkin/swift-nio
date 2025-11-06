@@ -154,6 +154,10 @@ on:
         type: boolean
         description: "Boolean to enable package-benchmark execution with `swift package benchmark`. Defaults to false."
         default: false
+      benchmark_package_path:
+        type: string
+        description: "Path to the directory containing the benchmarking package. Defaults to ."
+        default: "."
       macos_xcode_build_enabled:
         type: boolean
         description: "Boolean to enable the Xcode build targeting macOS. Defaults to true."
