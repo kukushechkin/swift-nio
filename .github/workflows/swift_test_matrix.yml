@@ -96,7 +96,7 @@ jobs:
           fi
 
           docker_args+=("${{ matrix.config.image }}")
-          docker_args+=("bash" "-c" "$setup_command_expression ${{ matrix.config.command }} ${{ matrix.config.command_arguments }}")
+          docker_args+=("bash" "-c" "sudo sysctl -w kernel.perf_event_paranoid=-1; $setup_command_expression ${{ matrix.config.command }} ${{ matrix.config.command_arguments }}")
 
           echo "Executing Docker command: docker ${docker_args[*]}"
           docker "${docker_args[@]}"
