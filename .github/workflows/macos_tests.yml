@@ -150,6 +150,10 @@ on:
         type: boolean
         description: "Boolean to enable test execution with `swift test`. Defaults to true."
         default: true
+      swift_package_benchmark_enabled:
+        type: boolean
+        description: "Boolean to enable package-benchmark execution with `swift package benchmark`. Defaults to false."
+        default: false
       macos_xcode_build_enabled:
         type: boolean
         description: "Boolean to enable the Xcode build targeting macOS. Defaults to true."
