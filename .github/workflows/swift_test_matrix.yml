@@ -47,6 +47,7 @@ jobs:
 
           docker_args=(
             "run"
+            "--cap-add=SYS_ADMIN"
             "-v" "${{ github.workspace }}:$workspace"
             "-w" "$workspace"
             "-e" "CI=$CI"
