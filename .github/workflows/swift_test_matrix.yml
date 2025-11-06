@@ -47,6 +47,7 @@ jobs:
 
           docker_args=(
             "run"
+            "--cap-add=SYS_ADMIN"
             "--security-opt" "seccomp=unconfined"
             "-v" "${{ github.workspace }}:$workspace"
             "-w" "$workspace"
