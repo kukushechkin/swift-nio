@@ -38,21 +38,31 @@ jobs:
       - name: Enable performance monitoring (for instruction metrics)
         if: ${{ matrix.config.platform != 'Windows' }}
         run: |
-          echo "Current perf_event_paranoid: $(cat /proc/sys/kernel/perf_event_paranoid)"
-          sudo sysctl -w kernel.perf_event_paranoid=-1 || echo "Failed to set perf_event_paranoid (expected in some environments)"
-          echo "New perf_event_paranoid: $(cat /proc/sys/kernel/perf_event_paranoid)"
+          echo "=== Perf Event Paranoid ==="
+          echo "Current: $(cat /proc/sys/kernel/perf_event_paranoid)"
+          sudo sysctl -w kernel.perf_event_paranoid=-1 || echo "Failed to set"
+          echo "New: $(cat /proc/sys/kernel/perf_event_paranoid)"
 
-          # Test if perf events work on the host (outside Docker)
-          echo "Testing perf events on host..."
+          echo -e "\n=== PMU Hardware Devices ==="
+          ls -1 /sys/bus/event_source/devices/ 2>/dev/null || echo "None"
+
+          echo -e "\n=== CPU Info ==="
+          grep -E 'model name|flags|Features' /proc/cpuinfo | head -3
+
+          echo -e "\n=== Test Perf (host) ==="
           if command -v perf &> /dev/null; then
-            perf stat -e instructions:u -- echo "test" 2>&1 | head -5 || echo "perf command failed"
+            perf stat -e instructions:u -- echo "test" 2>&1 | grep -E 'instructions|not supported' || true
           else
-            echo "perf tool not installed, trying direct syscall test"
+            echo "perf not installed"
           fi
 
-          # Check if PMU devices exist
-          echo "PMU devices:"
-          ls /sys/bus/event_source/devices/ 2>/dev/null || echo "No PMU devices found"
+          echo -e "\n=== CPU PMU Check ==="
+          if [ -d /sys/bus/event_source/devices/cpu ]; then
+            echo "CPU PMU exists"
+            ls /sys/bus/event_source/devices/cpu/events/ 2>/dev/null | head -5 || echo "No events"
+          else
+            echo "No CPU PMU - hardware counters unavailable"
+          fi
       - name: Run matrix job
         if: ${{ matrix.config.platform != 'Windows' }}
         run: |
