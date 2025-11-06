@@ -35,6 +35,12 @@ jobs:
           submodules: true
       - name: Pull Docker image
         run: docker pull ${{ matrix.config.image }}
+      - name: Enable performance monitoring (for instruction metrics)
+        if: ${{ matrix.config.platform != 'Windows' }}
+        run: |
+          echo "Current perf_event_paranoid: $(cat /proc/sys/kernel/perf_event_paranoid)"
+          sysctl -w kernel.perf_event_paranoid=-1 || echo "Failed to set perf_event_paranoid (expected in some environments)"
+          echo "New perf_event_paranoid: $(cat /proc/sys/kernel/perf_event_paranoid)"
       - name: Run matrix job
         if: ${{ matrix.config.platform != 'Windows' }}
         run: |
